@@ -52,6 +52,10 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - Standaardmarkten: NL + BE. Max. 2 per adverteerder. Merken uit eerdere decks zijn uitgesloten. AI-content op Mix. Positionering: zelfde niveau.
 - "×2 overvragen" staat standaard aan.
 
+## Huisstijl
+- Stijl van shortcommerce.nl (eigen bureau): alleen donker, bijna zwart (#050506), witte tekst, neongroen accent #00df82 / #2cc295, groene gloed bovenaan (`.sc-glow`), pil-vormige knoppen/nav/badges, kaarten rounded-3xl. Fonts: Plus Jakarta Sans (koppen) + Fustat (tekst). Tokens in `src/app/globals.css`.
+- Gebruiker is niet technisch: `start.command` (dubbelklik op Mac) haalt de nieuwste versie op, installeert, migreert en start de app.
+
 ## Werkwijze
 Bouw in fases en stop na elke fase met testinstructies. Tests draai je met `npm test` (vitest).
 Fase 1 = fundament ✅ · 2 = scraper · 3 = klantprofiel · 4 = pipeline · 5 = deckscherm en exports · 6 = afwerking.

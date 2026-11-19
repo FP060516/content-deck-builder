@@ -9,7 +9,7 @@ export default async function DecksPage() {
   const decks = await db.deck.findMany({ orderBy: { updatedAt: "desc" }, include: { client: true } });
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Decks</h1>
+      <h1 className="sc-heading text-3xl font-semibold tracking-tight md:text-4xl">Decks</h1>
       <Card className="divide-y">
         {decks.length === 0 && <p className="p-6 text-sm text-muted-foreground">Nog geen decks. Start er een vanaf een klant.</p>}
         {decks.map((d) => (

@@ -535,7 +535,7 @@ export function BriefingForm({ deckId, initialTitle, initialBriefing, status, cl
       </div>
 
       {/* Sticky action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/90 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-black/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-6 py-3">
           <p className="text-sm">
             <b className="tabular-nums">Totaal: {total} ads</b>
@@ -548,8 +548,8 @@ export function BriefingForm({ deckId, initialTitle, initialBriefing, status, cl
           <div className="ml-auto flex items-center gap-2">
             {dirty && <span className="text-xs text-muted-foreground">Niet-opgeslagen wijzigingen</span>}
             <Button variant="outline" onClick={save} disabled={pending}><Save /> {pending ? "Opslaan…" : "Briefing opslaan"}</Button>
-            <Tooltip content="Komt in fase 4: zoekplan, ophalen, classificatie, selectie en teksten.">
-              <span><Button disabled><Wand2 /> Genereer</Button></span>
+            <Tooltip content="Nog niet beschikbaar: het automatisch zoeken en samenstellen van ads wordt in de volgende stappen gebouwd.">
+              <span><Button disabled><Wand2 /> Genereer <span className="text-xs opacity-70">(binnenkort)</span></Button></span>
             </Tooltip>
           </div>
         </div>

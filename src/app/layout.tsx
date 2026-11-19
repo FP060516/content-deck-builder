@@ -1,38 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Layers } from "lucide-react";
+import { Fustat, Plus_Jakarta_Sans } from "next/font/google";
 import { Providers } from "@/components/providers";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { NavLinks } from "@/components/nav-links";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const body = Fustat({ variable: "--font-body", subsets: ["latin"] });
+const display = Plus_Jakarta_Sans({ variable: "--font-display", subsets: ["latin"] });
 
 export const metadata: Metadata = { title: "Content Deck Builder", description: "Inspiratiedecks uit de Meta Ad Library" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+    <html lang="nl" className="dark" suppressHydrationWarning>
+      <body className={`${body.variable} ${display.variable} font-sans`}>
         <Providers>
-          <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
-            <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-6">
-              <Link href="/" className="flex items-center gap-2 font-semibold">
-                <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground"><Layers className="size-4" /></span>
-                Content Deck Builder
+          <div className="sc-glow" aria-hidden />
+          <header className="sticky top-0 z-40">
+            <div className="mx-auto flex h-20 max-w-7xl items-center gap-6 px-6">
+              <Link href="/" className="flex items-center gap-2.5">
+                <span className="flex size-8 items-center justify-center rounded-full bg-primary font-[family-name:var(--font-display)] text-sm font-extrabold text-primary-foreground">CD</span>
+                <span className="font-[family-name:var(--font-display)] text-[15px] font-bold tracking-tight">Content Deck <span className="text-primary">Builder</span></span>
               </Link>
-              <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-                <Link href="/" className="hover:text-foreground">Klanten</Link>
-                <Link href="/decks" className="hover:text-foreground">Decks</Link>
-                <Link href="/presets" className="hover:text-foreground">Presets</Link>
-              </nav>
-              <div className="ml-auto flex items-center gap-2">
-                <ThemeToggle />
-              </div>
+              <NavLinks />
             </div>
           </header>
-          <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+          <main className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-4">{children}</main>
         </Providers>
       </body>
     </html>

@@ -13,7 +13,7 @@ export default async function PresetsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Presets</h1>
+        <h1 className="sc-heading text-3xl font-semibold tracking-tight md:text-4xl">Presets</h1>
         <p className="text-sm text-muted-foreground">Je kiest presets bovenaan het briefingscherm. Eigen presets sla je op vanuit een briefing.</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

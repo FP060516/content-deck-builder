@@ -14,8 +14,9 @@ export default async function Home() {
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Klanten</h1>
+        <div className="space-y-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-xs text-white/90"><span className="size-1.5 rounded-full bg-primary" />Short Commerce · Content decks</span>
+          <h1 className="sc-heading text-3xl font-semibold tracking-tight md:text-4xl">Klanten</h1>
           <p className="text-sm text-muted-foreground">Kies een klant en start een nieuw content deck.</p>
         </div>
         <Button asChild><Link href="/clients/new"><Plus /> Nieuwe klant</Link></Button>
@@ -32,7 +33,7 @@ export default async function Home() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {clients.map((c) => (
-            <Card key={c.id} className="flex flex-col transition-shadow hover:shadow-md">
+            <Card key={c.id} className="flex flex-col transition-colors hover:border-primary/40">
               <CardHeader>
                 <Link href={`/clients/${c.id}`} className="hover:underline"><CardTitle>{c.name}</CardTitle></Link>
                 <div className="flex flex-wrap gap-1.5 pt-1">

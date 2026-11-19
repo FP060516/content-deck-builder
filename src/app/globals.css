@@ -2,51 +2,30 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: oklch(0.985 0.002 260);
-  --foreground: oklch(0.2 0.02 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 260);
-  --primary: oklch(0.42 0.16 265);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.955 0.006 260);
-  --secondary-foreground: oklch(0.25 0.02 260);
-  --muted: oklch(0.955 0.006 260);
-  --muted-foreground: oklch(0.5 0.02 260);
-  --accent: oklch(0.94 0.02 265);
-  --accent-foreground: oklch(0.25 0.05 265);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.91 0.008 260);
-  --input: oklch(0.89 0.008 260);
-  --ring: oklch(0.55 0.15 265);
-  --success: oklch(0.6 0.15 150);
-  --warning: oklch(0.75 0.15 75);
-  --radius: 0.6rem;
-}
-
-.dark {
-  --background: oklch(0.16 0.01 260);
-  --foreground: oklch(0.95 0.005 260);
-  --card: oklch(0.2 0.012 260);
-  --card-foreground: oklch(0.95 0.005 260);
-  --popover: oklch(0.22 0.012 260);
-  --popover-foreground: oklch(0.95 0.005 260);
-  --primary: oklch(0.7 0.14 265);
-  --primary-foreground: oklch(0.15 0.02 265);
-  --secondary: oklch(0.26 0.012 260);
-  --secondary-foreground: oklch(0.95 0.005 260);
-  --muted: oklch(0.26 0.012 260);
-  --muted-foreground: oklch(0.68 0.015 260);
-  --accent: oklch(0.3 0.04 265);
-  --accent-foreground: oklch(0.95 0.005 260);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(0.3 0.012 260);
-  --input: oklch(0.34 0.012 260);
-  --ring: oklch(0.7 0.14 265);
-  --success: oklch(0.7 0.15 150);
-  --warning: oklch(0.8 0.14 75);
+/* Short Commerce style: near-black, white text, neon green accent, pill shapes. Dark only. */
+:root, .dark {
+  --background: #050506;
+  --foreground: rgba(255, 255, 255, 0.96);
+  --card: #0e0f11;
+  --card-foreground: rgba(255, 255, 255, 0.96);
+  --popover: #121316;
+  --popover-foreground: rgba(255, 255, 255, 0.96);
+  --primary: #00df82;
+  --primary-foreground: #020308;
+  --secondary: #17171d;
+  --secondary-foreground: rgba(255, 255, 255, 0.96);
+  --muted: #17171d;
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --accent: rgba(0, 223, 130, 0.1);
+  --accent-foreground: #ffffff;
+  --destructive: #ff4d00;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: #2cc295;
+  --success: #2cc295;
+  --warning: #ffb547;
+  --radius: 1rem;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -74,11 +53,37 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground antialiased; }
+  body { @apply bg-background text-foreground antialiased; min-height: 100vh; }
+  h1, h2, h3 { font-family: var(--font-display), sans-serif; letter-spacing: -0.02em; }
+  ::selection { background: rgba(0, 223, 130, 0.3); }
+}
+
+/* Green glow at the top of the page, like the agency site hero. */
+.sc-glow {
+  pointer-events: none;
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 640px;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 45% 55% at 42% -8%, rgba(0, 223, 130, 0.55), transparent 70%),
+    radial-gradient(ellipse 70% 70% at 50% -20%, rgba(0, 120, 70, 0.35), transparent 75%);
+}
+
+/* Pill button with green outline and soft glow. */
+.sc-glow-btn { box-shadow: 0 0 0 1px rgba(0, 223, 130, 0.9), 0 6px 24px -6px rgba(0, 223, 130, 0.55); }
+
+/* Heading gradient: white fading to grey. */
+.sc-heading {
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.62) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

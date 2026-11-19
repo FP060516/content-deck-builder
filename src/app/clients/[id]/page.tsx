@@ -24,7 +24,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-muted-foreground"><Link href="/" className="hover:underline">Klanten</Link> / {client.name}</p>
-            <h1 className="text-2xl font-semibold tracking-tight">{client.name}</h1>
+            <h1 className="sc-heading text-3xl font-semibold tracking-tight md:text-4xl">{client.name}</h1>
           </div>
           <form action={deleteClient.bind(null, client.id)}>
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive"><Trash2 /> Verwijderen</Button>

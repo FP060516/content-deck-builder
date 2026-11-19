@@ -32,14 +32,14 @@ export function OptionPicker(props: Multi | Single) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
         <button type="button" className={cn(
-          "flex min-h-10 w-full items-center gap-2 rounded-md border border-input bg-card px-3 py-1.5 text-left text-sm shadow-xs transition-colors hover:border-ring/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 cursor-pointer",
+          "flex min-h-10 w-full items-center gap-2 rounded-xl border border-input bg-white/[0.03] px-3 py-1.5 text-left text-sm shadow-xs transition-colors hover:border-ring/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 cursor-pointer",
           className,
         )}>
           <div className="flex flex-1 flex-wrap gap-1.5">
             {selected.length === 0 && <span className="text-muted-foreground">{placeholder}</span>}
             {!props.multiple && selected[0] && <span>{labelOf(selected[0])}</span>}
             {props.multiple && selected.map((v) => (
-              <span key={v} className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              <span key={v} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                 {labelOf(v)}
                 <span role="button" tabIndex={-1} aria-label={`Verwijder ${labelOf(v)}`} className="rounded-sm hover:bg-primary/20"
                   onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); toggle(v); }}>

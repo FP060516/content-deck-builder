@@ -1,3 +1,6 @@
+## Snel starten (Mac)
+Dubbelklik op **start.command** in de map `content-deck-builder`. Dat haalt de nieuwste versie op, installeert alles, werkt de database bij en opent de app. Of in de terminal: `cd content-deck-builder` en dan `./start.command`.
+
 # Content Deck Builder
 
 Lokale tool om content decks te maken: inspiratie uit de Meta Ad Library, met toepassingsteksten per klant.

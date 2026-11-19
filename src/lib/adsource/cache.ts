@@ -4,7 +4,11 @@ import type { AdSearchQuery, RawAd } from "./types";
 
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
-export const cacheKey = (q: AdSearchQuery) => buildAdLibrarySearchUrl(q);
+/** Search URL; results from the test fixture page get their own key so they never mix with real ones. */
+export const cacheKey = (q: AdSearchQuery) => {
+  const fixture = process.env.AD_LIBRARY_FIXTURE_URL;
+  return fixture ? `${buildAdLibrarySearchUrl(q)}#fixture=${fixture}` : buildAdLibrarySearchUrl(q);
+};
 
 export async function getCached(q: AdSearchQuery, now = Date.now()): Promise<RawAd[] | null> {
   const row = await db.searchCache.findUnique({ where: { key: cacheKey(q) } });

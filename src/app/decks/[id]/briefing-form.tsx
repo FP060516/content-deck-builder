@@ -31,6 +31,7 @@ import { BriefingSchema, hydrateBriefing, totalAds, type Briefing, type Briefing
 import { BUILT_IN_PRESETS } from "@/lib/briefing/presets";
 import { buildAdLibrarySearchUrl } from "@/lib/adlibrary/url";
 import { deleteDeck, duplicateDeck, saveBriefing, savePreset } from "../../actions";
+import { startGenerate } from "./generate-actions";
 
 export type ClientLite = {
   id: string; name: string; industry: string; positioning: string; country: string; language: string;
@@ -44,6 +45,7 @@ type Props = {
   status: string;
   clients: ClientLite[];
   userPresets: { id: string; name: string; briefing: unknown }[];
+  hasItems?: boolean;
 };
 
 // ---------- small layout helpers ----------
@@ -90,7 +92,8 @@ const PERIOD_TYPES: { value: Period["type"]; label: string }[] = [
   { value: "evergreen", label: "Evergreen" },
 ];
 
-export function BriefingForm({ deckId, initialTitle, initialBriefing, status, clients, userPresets }: Props) {
+export function BriefingForm({ deckId, initialTitle, initialBriefing, status, clients, userPresets, hasItems = false }: Props) {
+  const generating = status === "generating";
   const router = useRouter();
   const [title, setTitle] = React.useState(initialTitle);
   const [b, setB] = React.useState<Briefing>(initialBriefing);
@@ -170,6 +173,21 @@ export function BriefingForm({ deckId, initialTitle, initialBriefing, status, cl
       toast.success("Briefing opgeslagen");
       router.refresh();
     });
+
+  // Saves the briefing first, then queues the pipeline. Existing results are replaced (asks first).
+  const generate = () => {
+    if (hasItems && !window.confirm("De huidige resultaten van dit deck worden vervangen. Doorgaan?")) return;
+    start(async () => {
+      const saved = await saveBriefing(deckId, title, b);
+      if (!saved.ok) return void toast.error(saved.error);
+      setSavedSnapshot(JSON.stringify({ t: title, b }));
+      const res = await startGenerate(deckId);
+      if (!res.ok) return void toast.error(res.error);
+      toast.success("Genereren gestart. Dit duurt een paar minuten.");
+      router.refresh();
+      setTimeout(() => document.getElementById("resultaten")?.scrollIntoView({ behavior: "smooth" }), 400);
+    });
+  };
 
   const doSavePreset = () =>
     start(async () => {
@@ -548,9 +566,9 @@ export function BriefingForm({ deckId, initialTitle, initialBriefing, status, cl
           <div className="ml-auto flex items-center gap-2">
             {dirty && <span className="text-xs text-muted-foreground">Niet-opgeslagen wijzigingen</span>}
             <Button variant="outline" onClick={save} disabled={pending}><Save /> {pending ? "Opslaan…" : "Briefing opslaan"}</Button>
-            <Tooltip content="Nog niet beschikbaar: het automatisch zoeken en samenstellen van ads wordt in de volgende stappen gebouwd.">
-              <span><Button disabled><Wand2 /> Genereer <span className="text-xs opacity-70">(binnenkort)</span></Button></span>
-            </Tooltip>
+            <Button onClick={generate} disabled={pending || generating || !validation.success || total === 0}>
+              <Wand2 /> {generating ? "Bezig met genereren…" : hasItems ? "Opnieuw genereren" : "Genereer"}
+            </Button>
           </div>
         </div>
       </div>

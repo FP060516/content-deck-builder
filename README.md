@@ -44,3 +44,9 @@ npm test
 3. Klik bij **Profiel automatisch invullen** op **Analyseren**. De tool leest de website (tekst + producten) en de eigen ads; Claude stelt branche, positionering, tone of voice, USP's, "niet beloven", concurrenten en een gat-analyse voor.
 4. Vink aan wat je wilt overnemen, klik **Overnemen in formulier** en daarna **Wijzigingen opslaan**.
 Kosten per analyse staan erbij (meestal enkele centen).
+
+## Fase 4: Genereren
+1. Zorg dat de klant een profiel heeft (fase 3) en dat de API-sleutel is ingesteld.
+2. Open een deck, vul de briefing in en klik op **Genereer** (rechtsonder).
+3. De tool maakt een zoekplan, haalt ads op uit de Ad Library (vorig jaar dezelfde periode), filtert ruis, kiest de beste per contenttype en schrijft per ad een toepassingstekst. Dit duurt 3–10 minuten; de voortgang staat onder **Resultaat**.
+4. Onderaan zie je per ad waarom hij is gekozen, en onder **Niet geselecteerd** waarom andere ads zijn afgevallen.

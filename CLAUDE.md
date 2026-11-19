@@ -47,6 +47,9 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - `src/lib/jobs/profile.ts`: taak "profile" = crawl → profielvoorstel → eigen ads (exacte zin, gefilterd op adverteerder) → gat-analyse (met tot 6 creatives als beeld). `src/lib/profile/` = schema's, `gapToNotes`, `buildPatch` (lijsten samenvoegen, nooit overschrijven).
 - `src/app/clients/profile-assistant.tsx`: kaart in het klantformulier; voorstel per onderdeel aanvinken → in formulier → gebruiker slaat op.
 - `src/components/job-panel.tsx`: `useJob` (SSE) + `JobPanel`, gedeeld door scraper en profiel.
+- `src/lib/jobs/generate.ts`: taak "generate" (de Genereer-knop). Stappen: zoekplan (Claude, `prompts/search-plan.md`) → `sanitizePlan` (alleen gekozen markten, nooit de klantnaam, concurrenten exact bij breedte 0) → elke zoekterm × elk zoekvenster ophalen (max. 16 zoekopdrachten, 30 ads per stuk, cache) → voorfilter (geen media, eigen ads, uitgesloten/eerder gebruikte merken) → thumbnails downloaden → classificatie per 10 met beelden (Claude, effort low, `prompts/classify.md`) → `selectAds` → video's van gekozen ads downloaden → toepassingsteksten + samenvatting (copy-model, `prompts/application.md`) → in één transactie opslaan (AdCandidate met reden van afwijzing, DeckItem, UsedAdvertiser, deck → review). Bij fout/annuleren gaat het deck terug naar draft of review.
+- `src/lib/pipeline/`: `rank.ts` (pure logica: `winnerScore`, `scoreOf` = 0,35 relevantie + 0,25 winnaar + 0,2 gat + 0,2 kwaliteit, `aiCap`, `selectAds`, `forbiddenHits`), `describe.ts` (briefing/klant als tekst voor prompts), `schemas.ts`.
+- `src/app/decks/[id]/deck-results.tsx`: eerste resultatenweergave onder de briefing (voortgang, samenvatting, items per contenttype, "waarom niet?"). Bewerken en exports = fase 5.
 - `src/components/option-picker.tsx`: de dropdown-balk (doorzoekbaar, gegroepeerd, multi-select met chips).
 - `src/app/decks/[id]/briefing-form.tsx`: het briefingscherm.
 
@@ -77,6 +80,11 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - Concurrenten komen uit de algemene kennis van Claude en worden als suggestie getoond.
 - Vanuit de cloudomgeving is er geen API-sleutel: echte Claude-calls zijn alleen op de Mac van de gebruiker getest.
 
+## Fase 4-notities
+- Cache-sleutel krijgt `#fixture=` als `AD_LIBRARY_FIXTURE_URL` aan staat, zodat testdata nooit echte zoekresultaten vervangt.
+- Opnieuw genereren vervangt de resultaten van het deck (de UI vraagt bevestiging) en verhoogt `round`.
+- Classificatiebudget: max(20, min(90, doel × 3)) ads, gekozen op winnaarssignalen.
+
 ## Werkwijze
 Bouw in fases en stop na elke fase met testinstructies. Tests draai je met `npm test` (vitest).
-Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel ✅ · 4 = pipeline · 5 = deckscherm en exports · 6 = afwerking.
+Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel ✅ · 4 = pipeline ✅ · 5 = deckscherm en exports · 6 = afwerking.

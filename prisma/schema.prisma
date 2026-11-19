@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// JSON fields are stored as String (SQLite) and validated with zod in src/lib.
+
+model Client {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  websiteUrl       String   @default("")
+  industry         String   @default("")
+  country          String   @default("NL")
+  language         String   @default("nl")
+  positioning      String   @default("mid") // budget | mid | premium | luxury
+  toneSummary      String   @default("")
+  toneExamples     String   @default("[]") // string[]
+  products         String   @default("[]") // {name, category, price, url}[]
+  usps             String   @default("[]") // string[]
+  forbiddenClaims  String   @default("[]") // string[]
+  competitors      String   @default("[]") // string[]
+  adLibraryPage    String   @default("")
+  gapAnalysisNotes String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  decks           Deck[]
+  usedAdvertisers UsedAdvertiser[]
+}
+
+model Deck {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title     String
+  briefing  String   @default("{}") // Briefing (src/lib/briefing/schema.ts)
+  status    String   @default("draft") // draft | generating | review | done
+  round     Int      @default(1)
+  summary   String   @default("") // markdown bullets
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  candidates      AdCandidate[]
+  items           DeckItem[]
+  usedAdvertisers UsedAdvertiser[]
+}
+
+model AdCandidate {
+  id               String    @id @default(cuid())
+  deckId           String
+  deck             Deck      @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  adId             String
+  advertiser       String
+  pageName         String    @default("")
+  mediaType        String    @default("image") // image | video | carousel
+  contentType      String?   // static | video_brand | ugc | creator | third_party
+  bodyText         String    @default("")
+  startDate        DateTime?
+  activeDays       Int?
+  variantCount     Int       @default(1)
+  country          String    @default("")
+  sourceQuery      String    @default("")
+  mediaUrlOriginal String    @default("")
+  mediaUrlLocal    String    @default("")
+  posterUrl        String    @default("")
+  mediaHash        String    @default("")
+  scores           String    @default("{}") // {relevance, quality, ...}
+  scoreTotal       Float     @default(0)
+  scoreReason      String    @default("")
+  rejected         Boolean   @default(false)
+  rejectReason     String    @default("")
+  round            Int       @default(1)
+  createdAt        DateTime  @default(now())
+
+  items DeckItem[]
+
+  @@unique([deckId, adId])
+}
+
+model DeckItem {
+  id            String      @id @default(cuid())
+  deckId        String
+  deck          Deck        @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  candidateId   String
+  candidate     AdCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  contentType   String
+  position      Int
+  whatYouSee    String      @default("")
+  application   String      @default("")
+  whyThis       String      @default("")
+  funnelTag     String      @default("")
+  status        String      @default("pending") // pending | approved | rejected
+  pinned        Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+}
+
+model UsedAdvertiser {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  deckId     String
+  deck       Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  advertiser String
+  createdAt  DateTime @default(now())
+
+  @@unique([clientId, deckId, advertiser])
+}
+
+model BriefingPreset {
+  id        String   @id @default(cuid())
+  name      String
+  briefing  String   // Partial<Briefing> without clientId
+  createdAt DateTime @default(now())
+}

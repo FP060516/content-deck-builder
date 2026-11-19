@@ -2,7 +2,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ExternalLink, Search, Square, Film, Image as ImageIcon, Layers, CircleAlert } from "lucide-react";
+import { ExternalLink, Search, Film, Image as ImageIcon, Layers } from "lucide-react";
+import { JobPanel, isActive, queuedJob, useJob } from "@/components/job-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,6 @@ import { addDays, todayYMD, formatNL } from "@/lib/briefing/dates";
 import { buildAdLibrarySearchUrl } from "@/lib/adlibrary/url";
 import type { JobView } from "@/lib/jobs/queue";
 import type { ScrapeResult, ScrapedAd } from "@/lib/jobs/scrape-schema";
-import { cn } from "@/lib/utils";
 import { startScrape, cancelScrape } from "./actions";
 
 type Form = { q: string; country: string; mediaType: "all" | "image" | "video"; exactPhrase: boolean; from: string; to: string; max: number; useCache: boolean };
@@ -31,7 +31,7 @@ function defaultForm(): Form {
 export function ScraperClient({ initialJob }: { initialJob: JobView | null }) {
   const router = useRouter();
   const [f, setF] = React.useState<Form>(defaultForm);
-  const [job, setJob] = React.useState<JobView | null>(initialJob);
+  const [job, setJob] = useJob(initialJob, () => router.refresh());
   const [pending, start] = React.useTransition();
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((p) => ({ ...p, [k]: v }));
 
@@ -41,27 +41,14 @@ export function ScraperClient({ initialJob }: { initialJob: JobView | null }) {
   }, [initialJob?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const query = { country: f.country, q: f.q.trim(), exactPhrase: f.exactPhrase, mediaType: f.mediaType, range: f.from && f.to ? { from: f.from, to: f.to } : undefined };
-  const running = job && (job.status === "queued" || job.status === "running");
-
-  // Live progress via Server-Sent Events.
-  React.useEffect(() => {
-    if (!job || !(job.status === "queued" || job.status === "running")) return;
-    const es = new EventSource(`/api/jobs/${job.id}/events`);
-    es.addEventListener("job", (e) => {
-      const next = JSON.parse((e as MessageEvent).data) as JobView;
-      setJob(next);
-      if (["done", "failed", "cancelled"].includes(next.status)) { es.close(); router.refresh(); }
-    });
-    es.onerror = () => es.close();
-    return () => es.close();
-  }, [job?.id, job?.status === "queued" || job?.status === "running"]); // eslint-disable-line react-hooks/exhaustive-deps
+  const running = isActive(job);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     start(async () => {
       const res = await startScrape({ queries: [query], maxPerQuery: f.max, useCache: f.useCache, client: "test", folder: "scraper" });
       if (!res.ok || !res.data) return void toast.error(res.ok ? "Onbekende fout" : res.error);
-      setJob({ id: res.data.jobId, type: "scrape", status: "queued", progress: 0, message: "In de wachtrij…", log: [], result: {}, error: "", createdAt: new Date().toISOString(), finishedAt: null });
+      setJob(queuedJob(res.data.jobId, "scrape"));
       router.replace(`/scraper?job=${res.data.jobId}`, { scroll: false });
     });
   };
@@ -121,38 +108,6 @@ export function ScraperClient({ initialJob }: { initialJob: JobView | null }) {
       {job && <JobPanel job={job} onCancel={() => start(async () => { await cancelScrape(job.id); })} />}
       {result && <ContactSheet result={result} />}
     </div>
-  );
-}
-
-function JobPanel({ job, onCancel }: { job: JobView; onCancel: () => void }) {
-  const active = job.status === "queued" || job.status === "running";
-  return (
-    <Card>
-      <CardContent className="space-y-3 pt-5">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-medium">{active ? job.message || "Bezig…" : job.status === "done" ? "Klaar" : job.status === "cancelled" ? "Geannuleerd" : "Mislukt"}</p>
-          {active && <Button variant="outline" size="sm" onClick={onCancel}><Square /> Stoppen</Button>}
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/10">
-          <div className={cn("h-full rounded-full transition-all", job.status === "failed" ? "bg-destructive" : "bg-primary")} style={{ width: `${job.status === "done" ? 100 : job.progress}%` }} />
-        </div>
-        {job.status === "failed" && (
-          <p className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm"><CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />{job.error || "Onbekende fout"}</p>
-        )}
-        {job.log.length > 0 && (
-          <details className="text-xs text-muted-foreground" open={active}>
-            <summary className="cursor-pointer select-none">Logboek ({job.log.length})</summary>
-            <ul className="mt-2 max-h-48 space-y-0.5 overflow-auto font-mono">
-              {job.log.map((l, i) => (
-                <li key={i} className={cn(l.level === "warn" && "text-warning", l.level === "error" && "text-destructive")}>
-                  {new Date(l.t).toLocaleTimeString("nl-NL")} · {l.msg}
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 

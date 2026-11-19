@@ -13,6 +13,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { COUNTRIES, INDUSTRIES, LANGUAGES, POSITIONINGS } from "@/lib/briefing/options";
 import type { ClientInput, Product } from "@/lib/client-profile";
 import { saveClient } from "../actions";
+import { ProfileAssistant, type ProfilePatch } from "./profile-assistant";
 
 const lines = (s: string) => s.split("\n").map((l) => l.trim()).filter(Boolean);
 
@@ -39,6 +40,18 @@ export function ClientForm({ id, initial }: { id: string | null; initial: Client
   const set = <K extends keyof ClientInput>(k: K, v: ClientInput[K]) => setC((p) => ({ ...p, [k]: v }));
   const setProduct = (i: number, patch: Partial<Product>) =>
     set("products", c.products.map((p, j) => (j === i ? { ...p, ...patch } : p)));
+
+  // Proposal from the profile assistant: lists also update the raw textarea text.
+  const applyPatch = (patch: ProfilePatch) => {
+    setC((p) => ({ ...p, ...patch }));
+    setRaw((r) => ({
+      toneExamples: patch.toneExamples ? patch.toneExamples.join("\n") : r.toneExamples,
+      usps: patch.usps ? patch.usps.join("\n") : r.usps,
+      forbiddenClaims: patch.forbiddenClaims ? patch.forbiddenClaims.join("\n") : r.forbiddenClaims,
+    }));
+  };
+  // The assistant should see what is typed in the textareas, not the last saved lists.
+  const current: ClientInput = { ...c, toneExamples: lines(raw.toneExamples), usps: lines(raw.usps), forbiddenClaims: lines(raw.forbiddenClaims) };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,13 +80,13 @@ export function ClientForm({ id, initial }: { id: string | null; initial: Client
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <Field label="Naam *"><Input value={c.name} onChange={(e) => set("name", e.target.value)} placeholder="Bijv. Goudsmid & Co" required /></Field>
-          <Field label="Website-URL" hint="Crawlen en automatisch profiel maken komt in fase 3.">
+          <Field label="Website-URL" hint="Gebruik daarna “Profiel automatisch invullen” hieronder.">
             <Input value={c.websiteUrl} onChange={(e) => set("websiteUrl", e.target.value)} placeholder="https://…" />
           </Field>
           <Field label="Branche">
             <OptionPicker groups={[{ label: "", options: INDUSTRIES }]} value={c.industry || undefined} onChange={(v) => set("industry", v)} placeholder="Kies een branche" />
           </Field>
-          <Field label="Pagina-naam in de Ad Library" hint="Exact zoals de adverteerder in de Ad Library heet.">
+          <Field label="Pagina-naam in de Ad Library" hint="Exact zoals de adverteerder in de Ad Library heet. Nodig voor de gat-analyse.">
             <Input value={c.adLibraryPage} onChange={(e) => set("adLibraryPage", e.target.value)} />
           </Field>
           <Field label="Land">
@@ -87,6 +100,8 @@ export function ClientForm({ id, initial }: { id: string | null; initial: Client
           </Field>
         </CardContent>
       </Card>
+
+      <ProfileAssistant client={current} onApply={applyPatch} />
 
       <Card>
         <CardHeader>
@@ -118,7 +133,7 @@ export function ClientForm({ id, initial }: { id: string | null; initial: Client
         <CardHeader className="flex-row items-start justify-between">
           <div className="space-y-1">
             <CardTitle>Productcatalogus</CardTitle>
-            <CardDescription>Echte productnamen voor de toepassingsteksten. Wordt in fase 3 gescrapet, en blijft met de hand aan te passen.</CardDescription>
+            <CardDescription>Echte productnamen voor de toepassingsteksten. Automatisch op te halen via de analyse hierboven, en met de hand aan te passen.</CardDescription>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => set("products", [...c.products, { name: "", category: "", price: "", url: "" }])}>
             <Plus /> Product
@@ -149,7 +164,7 @@ export function ClientForm({ id, initial }: { id: string | null; initial: Client
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Sparkles className="size-4 text-primary" /> Gat-analyse</CardTitle>
-          <CardDescription>Wat doet de klant al in de Ad Library, en wat ontbreekt? (Wordt in fase 3 door Claude voorgesteld.)</CardDescription>
+          <CardDescription>Wat doet de klant al in de Ad Library, en wat ontbreekt? Wordt voorgesteld door de analyse hierboven.</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea className="min-h-28" value={c.gapAnalysisNotes} onChange={(e) => set("gapAnalysisNotes", e.target.value)} placeholder={"- Geen cadeau-content\n- Geen deadline-ads in december\n- Geen mannendoelgroep\n- Geen creators"} />

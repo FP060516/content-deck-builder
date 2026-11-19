@@ -1,6 +1,7 @@
 import { db } from "../db";
 import type { JobLogEntry } from "./queue";
 import { runScrapeJob } from "./scrape";
+import { runProfileJob } from "./profile";
 
 export type JobContext = {
   id: string;
@@ -11,7 +12,7 @@ export type JobContext = {
 };
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
-const HANDLERS: Record<string, Handler> = { scrape: runScrapeJob };
+const HANDLERS: Record<string, Handler> = { scrape: runScrapeJob, profile: runProfileJob };
 
 const POLL_MS = 1000;
 const MAX_LOG = 300;

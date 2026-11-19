@@ -6,7 +6,7 @@ export default function NewClientPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="sc-heading text-3xl font-semibold tracking-tight md:text-4xl">Nieuwe klant</h1>
-        <p className="text-sm text-muted-foreground">Vul het profiel nu met de hand in. In fase 3 crawlt de tool de site en stelt Claude het profiel en de gat-analyse voor.</p>
+        <p className="text-sm text-muted-foreground">Vul naam, website en pagina-naam in en klik op “Analyseren”: de tool leest de site en eigen ads, en Claude stelt het profiel en de gat-analyse voor.</p>
       </div>
       <ClientForm id={null} initial={EMPTY_CLIENT} />
     </div>

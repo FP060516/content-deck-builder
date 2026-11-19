@@ -41,6 +41,12 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - `src/lib/media/`: download naar `storage/media/<klant>/<map>/<adId>.<ext>`; `src/app/media/[...path]/route.ts` serveert ze (met Range voor video).
 - `src/lib/jobs/`: job-queue in de DB (`Job`), worker draait in het Next-serverproces (gestart in `src/instrumentation.ts`, één taak tegelijk), `scrape.ts` = taak; SSE via `/api/jobs/[id]/events`.
 - `src/app/scraper/`: testscherm met live voortgang en contactsheet.
+- `src/lib/site/crawl.ts`: leest de webshop (homepage + max. 5 merk/servicepagina's, robots.txt, 0,7 s pauze) en producten via Shopify `/products.json`, WooCommerce Store API of JSON-LD.
+- `src/lib/llm/claude.ts`: `callStructured()` = één Claude-call met prompt uit `/prompts/*.md` (systeem en user gescheiden door `---USER---`, `{{vars}}`), zod-schema via structured outputs, refusal-fallback aan, kosten per call. `setClaudeRunnerForTests()` voor tests.
+- `src/lib/settings.ts` + `/settings`: API-sleutel en modellen in de DB (tabel `Setting`), `.env` als terugval.
+- `src/lib/jobs/profile.ts`: taak "profile" = crawl → profielvoorstel → eigen ads (exacte zin, gefilterd op adverteerder) → gat-analyse (met tot 6 creatives als beeld). `src/lib/profile/` = schema's, `gapToNotes`, `buildPatch` (lijsten samenvoegen, nooit overschrijven).
+- `src/app/clients/profile-assistant.tsx`: kaart in het klantformulier; voorstel per onderdeel aanvinken → in formulier → gebruiker slaat op.
+- `src/components/job-panel.tsx`: `useJob` (SSE) + `JobPanel`, gedeeld door scraper en profiel.
 - `src/components/option-picker.tsx`: de dropdown-balk (doorzoekbaar, gegroepeerd, multi-select met chips).
 - `src/app/decks/[id]/briefing-form.tsx`: het briefingscherm.
 
@@ -65,6 +71,12 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - De worker houdt oude code vast tijdens `next dev`: herstart de server na wijzigingen in `src/lib/jobs` of `src/lib/adsource`.
 - `npm test` gebruikt Playwright-chromium (geïnstalleerd door `start.command`).
 
+## Fase 3-notities
+- Analyse-model = instelling `anthropicModel` (standaard Sonnet 5.5), teksten = `anthropicModelCopy` (Opus 5.5). Effort `medium`.
+- Zonder API-sleutel werkt crawlen en eigen ads ophalen wel; analyse wordt overgeslagen met een duidelijke melding.
+- Concurrenten komen uit de algemene kennis van Claude en worden als suggestie getoond.
+- Vanuit de cloudomgeving is er geen API-sleutel: echte Claude-calls zijn alleen op de Mac van de gebruiker getest.
+
 ## Werkwijze
 Bouw in fases en stop na elke fase met testinstructies. Tests draai je met `npm test` (vitest).
-Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel · 4 = pipeline · 5 = deckscherm en exports · 6 = afwerking.
+Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel ✅ · 4 = pipeline · 5 = deckscherm en exports · 6 = afwerking.

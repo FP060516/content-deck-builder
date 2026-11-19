@@ -144,3 +144,10 @@ model SearchCache {
   results   String   // RawAd[]
   fetchedAt DateTime @default(now())
 }
+
+/// App settings editable in the UI (e.g. Anthropic API key, models). Env vars are the fallback.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -37,3 +37,10 @@ npm test
 - Dezelfde zoekopdracht binnen 24 uur komt uit de cache, zodat Meta niet onnodig vaak wordt bezocht.
 - Je wilt meekijken wat de browser doet? Zet in `.env` `SCRAPER_HEADLESS="false"`.
 - Alleen openbare Ad Library-data, zonder login, in een rustig tempo. Media zijn alleen voor intern inspiratiegebruik.
+
+## Fase 3: Klantprofiel
+1. Ga naar **Instellingen** en plak je Anthropic API-sleutel (aan te maken op platform.claude.com). Klik op **Verbinding testen**.
+2. Open een klant (of **Nieuwe klant**), vul **Website-URL** en **Pagina-naam in de Ad Library** in.
+3. Klik bij **Profiel automatisch invullen** op **Analyseren**. De tool leest de website (tekst + producten) en de eigen ads; Claude stelt branche, positionering, tone of voice, USP's, "niet beloven", concurrenten en een gat-analyse voor.
+4. Vink aan wat je wilt overnemen, klik **Overnemen in formulier** en daarna **Wijzigingen opslaan**.
+Kosten per analyse staan erbij (meestal enkele centen).

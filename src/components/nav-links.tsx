@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/decks", label: "Decks", match: (p: string) => p.startsWith("/decks") },
   { href: "/presets", label: "Presets", match: (p: string) => p.startsWith("/presets") },
   { href: "/scraper", label: "Scraper", match: (p: string) => p.startsWith("/scraper") },
+  { href: "/settings", label: "Instellingen", match: (p: string) => p.startsWith("/settings") },
 ];
 
 /** Pill-shaped navigation bar, dark green tint with a subtle border. */

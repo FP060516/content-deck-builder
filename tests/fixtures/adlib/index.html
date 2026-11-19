@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ad Library fixture</title>
+<style>.grid{display:grid;grid-template-columns:repeat(3,320px);gap:16px}.card{border:1px solid #ccc;padding:8px}img.creative{width:300px}.body{white-space:pre-line}a{display:block}</style></head>
+<body>
+<!-- Mimics the structure of the public Meta Ad Library results grid (EN + NL labels). -->
+<div role="dialog"><button>OK</button></div>
+<div class="results"><div class="grid">
+
+  <div class="cell"><div class="card">
+    <div class="meta"><div>Active</div><div>Library ID: 1111111111111</div><div>Started running on 3 Dec 2025</div><div>Platforms</div>
+      <div>2 ads use this creative and text</div><div role="button">See ad details</div></div>
+    <div class="ad"><div class="head"><img src="avatar.svg" width="32"><a href="https://www.facebook.com/goudsmidco">Goudsmid &amp; Co</a><div>Sponsored</div></div>
+      <div class="body">Het perfecte kerstcadeau ✨
+Gratis graveren tot 20 december.</div>
+      <img class="creative" src="img1.svg">
+      <div>GOUDSMID.NL</div><div role="button">Shop now</div></div>
+  </div></div>
+
+  <div class="cell"><div class="card">
+    <div class="meta"><div>Inactief</div><div>Bibliotheek-ID: 2222222222222</div><div>1 dec 2025 - 20 dec 2025</div>
+      <div>3 advertenties gebruiken deze creatie en tekst</div></div>
+    <div class="ad"><div class="head"><img src="avatar.svg" width="32"><a href="https://www.facebook.com/zilverhuis">Zilverhuis</a><div>Gesponsord</div></div>
+      <div class="body">Kies haar favoriete bedel.</div>
+      <video src="clip.mp4" poster="img2.svg"></video>
+      <div role="button">Nu shoppen</div></div>
+  </div></div>
+
+  <div class="cell"><div class="card">
+    <div class="meta"><div>Active</div><div>Library ID: 3333333333333</div><div>Started running on Nov 28, 2025</div></div>
+    <div class="ad"><div class="head"><img src="avatar.svg" width="32"><a href="https://www.facebook.com/ringstudio">Ring Studio</a><div>Sponsored</div></div>
+      <div class="body">Swipe door de collectie.</div>
+      <img class="creative" src="img3.svg"><img class="creative" src="img4.svg">
+      <div role="button">Learn more</div></div>
+  </div></div>
+
+  <!-- Not a real ad card: an ID without media should be skipped. -->
+  <div class="cell"><div class="card"><div>Library ID: 4444444444444</div><div>Sponsored</div><div>Text only</div></div></div>
+
+</div></div>
+</body></html>

@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/", label: "Klanten", match: (p: string) => p === "/" || p.startsWith("/clients") },
   { href: "/decks", label: "Decks", match: (p: string) => p.startsWith("/decks") },
   { href: "/presets", label: "Presets", match: (p: string) => p.startsWith("/presets") },
+  { href: "/scraper", label: "Scraper", match: (p: string) => p.startsWith("/scraper") },
 ];
 
 /** Pill-shaped navigation bar, dark green tint with a subtle border. */

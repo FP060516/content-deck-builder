@@ -30,3 +30,10 @@ Open http://localhost:3000.
 ```bash
 npm test
 ```
+
+## Fase 2: Scraper
+- Menu **Scraper**: zoekterm, land, media en periode invullen, dan **Zoeken**. Je ziet live voortgang, daarna een contactsheet met de gevonden ads.
+- Creatives worden meteen gedownload naar `storage/media/…`, omdat Facebook-links na een paar dagen verlopen.
+- Dezelfde zoekopdracht binnen 24 uur komt uit de cache, zodat Meta niet onnodig vaak wordt bezocht.
+- Je wilt meekijken wat de browser doet? Zet in `.env` `SCRAPER_HEADLESS="false"`.
+- Alleen openbare Ad Library-data, zonder login, in een rustig tempo. Media zijn alleen voor intern inspiratiegebruik.

@@ -6,6 +6,8 @@ git pull --ff-only || echo "  (bijwerken overgeslagen)"
 echo "▶ Onderdelen installeren…"
 npm install --no-fund --no-audit
 [ -f .env ] || cp .env.example .env
+echo "▶ Browser voor de scraper controleren (eerste keer ±150 MB)…"
+npx playwright install chromium
 echo "▶ Database bijwerken…"
 npx prisma migrate deploy
 npx prisma generate >/dev/null

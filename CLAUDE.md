@@ -37,6 +37,10 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - `src/lib/briefing/schema.ts`: zod-schema van de briefing en de standaardwaarden.
 - `src/lib/briefing/presets.ts`: ingebouwde presets.
 - `src/lib/adlibrary/url.ts`: bouwt Ad Library-URL's.
+- `src/lib/adsource/`: `types.ts` (AdSource-interface, RawAd), `parse.ts` (kaarttekst → ID, actief, datums, dagen, varianten; EN+NL), `extract-in-page.ts` (draait IN de pagina, kaartdetectie volgens les 5/6, moet zelfstandig blijven), `playwright-source.ts` (7× scrollen, 1,5 s pauze, ≥5 s tussen zoekopdrachten, cookiebanner), `cache.ts` (24 uur, sleutel = zoek-URL).
+- `src/lib/media/`: download naar `storage/media/<klant>/<map>/<adId>.<ext>`; `src/app/media/[...path]/route.ts` serveert ze (met Range voor video).
+- `src/lib/jobs/`: job-queue in de DB (`Job`), worker draait in het Next-serverproces (gestart in `src/instrumentation.ts`, één taak tegelijk), `scrape.ts` = taak; SSE via `/api/jobs/[id]/events`.
+- `src/app/scraper/`: testscherm met live voortgang en contactsheet.
 - `src/components/option-picker.tsx`: de dropdown-balk (doorzoekbaar, gegroepeerd, multi-select met chips).
 - `src/app/decks/[id]/briefing-form.tsx`: het briefingscherm.
 
@@ -56,6 +60,11 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - Stijl van shortcommerce.nl (eigen bureau): alleen donker, bijna zwart (#050506), witte tekst, neongroen accent #00df82 / #2cc295, groene gloed bovenaan (`.sc-glow`), pil-vormige knoppen/nav/badges, kaarten rounded-3xl. Fonts: Plus Jakarta Sans (koppen) + Fustat (tekst). Tokens in `src/app/globals.css`.
 - Gebruiker is niet technisch: `start.command` (dubbelklik op Mac) haalt de nieuwste versie op, installeert, migreert en start de app.
 
+## Fase 2-notities
+- Vanuit de cloudomgeving geeft facebook.com geen resultaten (datacenter-IP). Niet omzeilen (geen UA-spoofing). Testen gaat tegen `tests/fixtures/adlib/index.html`; `AD_LIBRARY_FIXTURE_URL` laat de app die pagina gebruiken. Echt scrapen gebeurt op de Mac van de gebruiker.
+- De worker houdt oude code vast tijdens `next dev`: herstart de server na wijzigingen in `src/lib/jobs` of `src/lib/adsource`.
+- `npm test` gebruikt Playwright-chromium (geïnstalleerd door `start.command`).
+
 ## Werkwijze
 Bouw in fases en stop na elke fase met testinstructies. Tests draai je met `npm test` (vitest).
-Fase 1 = fundament ✅ · 2 = scraper · 3 = klantprofiel · 4 = pipeline · 5 = deckscherm en exports · 6 = afwerking.
+Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel · 4 = pipeline · 5 = deckscherm en exports · 6 = afwerking.

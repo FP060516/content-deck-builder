@@ -117,3 +117,30 @@ model BriefingPreset {
   briefing  String   // Partial<Briefing> without clientId
   createdAt DateTime @default(now())
 }
+
+/// Background job queue (phase 2). Worker runs inside the Next.js server process.
+model Job {
+  id         String    @id @default(cuid())
+  type       String    // scrape
+  status     String    @default("queued") // queued | running | done | failed | cancelled
+  payload    String    @default("{}")
+  progress   Int       @default(0) // 0-100
+  message    String    @default("")
+  log        String    @default("[]") // [{t, level, msg}]
+  result     String    @default("{}")
+  error      String    @default("")
+  deckId     String?
+  createdAt  DateTime  @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+/// 24h cache of Ad Library search results, keyed by the search URL.
+model SearchCache {
+  key       String   @id
+  url       String
+  results   String   // RawAd[]
+  fetchedAt DateTime @default(now())
+}

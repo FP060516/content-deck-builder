@@ -51,10 +51,12 @@ export type Selection = { decisions: Decision[]; shortfall: Partial<Record<Conte
  * Fills the content-type slots from the structure, best score first, with max ads per advertiser
  * (lesson 8), no duplicate creatives, the AI cap and the minimum active days.
  */
-export function selectAds(inputs: RankInput[], b: Briefing): Selection {
+export function selectAds(inputs: RankInput[], b: Briefing, preset: { advertisers?: string[]; hashes?: string[]; aiCount?: number } = {}): Selection {
   const quota = { ...b.structure } as Record<ContentType, number>;
   const total = CONTENT_ORDER.reduce((s, t) => s + quota[t], 0);
-  const maxAi = aiCap(b.inspiration.aiContent, total);
+  // The AI cap counts over the whole deck, including items that are already in it (pinned).
+  const fixed = preset.advertisers?.length ?? 0;
+  const maxAi = Math.max(0, aiCap(b.inspiration.aiContent, total + fixed) - (preset.aiCount ?? 0));
   const minDays = b.inspiration.minActiveDays;
 
   const decisions = new Map<string, Decision>();
@@ -70,8 +72,10 @@ export function selectAds(inputs: RankInput[], b: Briefing): Selection {
   }
 
   pool.sort((a, b2) => b2.scores.total - a.scores.total);
+  const key0 = (s: string) => s.trim().toLowerCase();
   const perAdvertiser = new Map<string, number>();
-  const hashes = new Set<string>();
+  for (const a of preset.advertisers ?? []) perAdvertiser.set(key0(a), (perAdvertiser.get(key0(a)) ?? 0) + 1); // e.g. pinned items
+  const hashes = new Set<string>(preset.hashes ?? []);
   const filled: Record<ContentType, number> = { static: 0, video_brand: 0, ugc: 0, creator: 0, third_party: 0 };
   let ai = 0;
   const key = (s: string) => s.trim().toLowerCase();

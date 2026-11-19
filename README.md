@@ -50,3 +50,8 @@ Kosten per analyse staan erbij (meestal enkele centen).
 2. Open een deck, vul de briefing in en klik op **Genereer** (rechtsonder).
 3. De tool maakt een zoekplan, haalt ads op uit de Ad Library (vorig jaar dezelfde periode), filtert ruis, kiest de beste per contenttype en schrijft per ad een toepassingstekst. Dit duurt 3–10 minuten; de voortgang staat onder **Resultaat**.
 4. Onderaan zie je per ad waarom hij is gekozen, en onder **Niet geselecteerd** waarom andere ads zijn afgevallen.
+
+## Fase 5: Deck controleren en exporteren
+- Na het genereren opent het tabblad **2 · Deck**. Per ad: **Goed** / **Af**, vastpinnen, volgorde, de toepassingstekst en "wat je ziet" direct aanpassen, **Tekst herschrijven** (met optionele instructie) en **Vervangen** door een alternatief.
+- **Exporteren**: PowerPoint (importeer in Canva via Maken → Importeren), ZIP met alle creatives, CSV voor Canva Bulk Create, of Markdown. Afgekeurde ads gaan niet mee.
+- **Opnieuw genereren** vanaf de briefing: vastgepinde ads blijven staan, afgekeurde komen niet terug.

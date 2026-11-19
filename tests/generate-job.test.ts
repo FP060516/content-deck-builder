@@ -94,6 +94,25 @@ describe("runGenerateJob (fixture)", () => {
     expect(copyCall.vars.ads).toContain("Klant laat bedel zien.");
   }, 90_000);
 
+  it("regenerates: pinned ads stay, rejected ads never come back", async () => {
+    const items = await db.deckItem.findMany({ where: { deckId }, include: { candidate: true } });
+    const zilver = items.find((i) => i.candidate.advertiser === "Zilverhuis")!;
+    const goud = items.find((i) => i.candidate.advertiser === "Goudsmid & Co")!;
+    await db.deckItem.update({ where: { id: zilver.id }, data: { pinned: true, application: "Met de hand aangepast" } });
+    await db.deckItem.update({ where: { id: goud.id }, data: { status: "rejected" } });
+    const briefing = JSON.parse((await db.deck.findUniqueOrThrow({ where: { id: deckId } })).briefing);
+    briefing.inspiration.aiContent = "mix"; // 2 ads in total → max 1 AI, the pinned one is not AI
+    await db.deck.update({ where: { id: deckId }, data: { briefing: JSON.stringify(briefing) } });
+
+    const r = await runGenerateJob(ctx());
+    expect(r.selected).toBe(1);
+    const deck = await db.deck.findUniqueOrThrow({ where: { id: deckId }, include: { items: { include: { candidate: true }, orderBy: { position: "asc" } }, candidates: true } });
+    expect(deck.round).toBe(2);
+    expect(deck.items.map((i) => [i.candidate.advertiser, i.pinned, i.position])).toEqual([["Zilverhuis", true, 0], ["Ring Studio", false, 1]]);
+    expect(deck.items[0].application).toBe("Met de hand aangepast");
+    expect(deck.candidates.find((c) => c.adId === "1111111111111")?.rejectReason).toBe("Eerder afgekeurd door de marketeer");
+  }, 90_000);
+
   it("refuses an incomplete briefing with a clear message", async () => {
     await db.deck.update({ where: { id: deckId }, data: { briefing: JSON.stringify({ ...DEFAULT_BRIEFING, clientId, funnel: [] }) } });
     await expect(runGenerateJob(ctx())).rejects.toThrow(/briefing is niet compleet/);

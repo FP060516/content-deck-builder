@@ -22,6 +22,8 @@ export const GeneratePayloadSchema = z.object({ deckId: z.string() });
 const MAX_QUERIES = 10;
 const MAX_SEARCHES = 16;
 const ADS_PER_SEARCH = 30;
+const MARKETER_REPLACED = "Vervangen door marketeer";
+const MARKETER_REJECTED = "Eerder afgekeurd door de marketeer";
 const CLASSIFY_BATCH = 10;
 const MAX_COPY_IMAGES = 24;
 
@@ -93,8 +95,19 @@ async function generate(ctx: JobContext, deck: Prisma.DeckGetPayload<{ include: 
 
   const w = resolveSearchWindow(b.period, b.searchWindow);
   if (!w.ranges.length) throw new Error(`Geen zoekvenster: ${w.warnings.join(" ") || "controleer de periode."}`);
-  const total = totalAds(b.structure);
-  if (!total) throw new Error("Zet minimaal één contenttype aan.");
+  if (!totalAds(b.structure)) throw new Error("Zet minimaal één contenttype aan.");
+
+  // Regenerating: pinned items stay and take their slot; ads the marketer rejected or replaced never come back.
+  const prevItems = await db.deckItem.findMany({ where: { deckId: deck.id }, include: { candidate: true } });
+  const pinned = prevItems.filter((i) => i.pinned);
+  const pinnedIds = new Set(pinned.map((i) => i.candidate.adId));
+  const replaced = await db.adCandidate.findMany({ where: { deckId: deck.id, rejectReason: MARKETER_REPLACED }, select: { adId: true } });
+  const rejectedBefore = new Set([...prevItems.filter((i) => i.status === "rejected").map((i) => i.candidate.adId), ...replaced.map((r) => r.adId)]);
+  const structure = { ...b.structure };
+  for (const p of pinned) if (p.contentType in structure) structure[p.contentType as ContentType] = Math.max(0, structure[p.contentType as ContentType] - 1);
+  const bSel: Briefing = { ...b, structure };
+  const total = totalAds(structure);
+  if (!total) throw new Error("Alle plekken in het deck zijn al gevuld met vastgepinde ads.");
   const target = total * (b.overfetch ? 2 : 1);
   const warnings: string[] = [...w.warnings];
   const usage: Usage[] = [];
@@ -145,6 +158,7 @@ async function generate(ctx: JobContext, deck: Prisma.DeckGetPayload<{ include: 
       }
       const filter = meta.get(s)!.advertiserFilter;
       for (const a of ads) {
+        if (pinnedIds.has(a.adId)) continue; // already in the deck
         if (filter && !isOwnAd(a.advertiser, filter)) continue; // lesson 3: exact phrase, then filter on advertiser
         if (!found.has(a.adId)) found.set(a.adId, { ...a, query: s.q, localThumb: "", localMedia: "", mediaHash: "" });
       }
@@ -163,7 +177,8 @@ async function generate(ctx: JobContext, deck: Prisma.DeckGetPayload<{ include: 
   const ownNames = [client.adLibraryPage, client.name].filter(Boolean);
   const preRejected = new Map<string, string>();
   for (const a of found.values()) {
-    if (!a.mediaUrls.length) preRejected.set(a.adId, "Geen media in de kaart");
+    if (rejectedBefore.has(a.adId)) preRejected.set(a.adId, MARKETER_REJECTED);
+    else if (!a.mediaUrls.length) preRejected.set(a.adId, "Geen media in de kaart");
     else if (ownNames.some((n) => isOwnAd(a.advertiser, n))) preRejected.set(a.adId, "Eigen ad van de klant");
     else if (excluded.has(norm(a.advertiser))) preRejected.set(a.adId, "Uitgesloten merk of al gebruikt in een eerder deck");
   }
@@ -210,7 +225,10 @@ async function generate(ctx: JobContext, deck: Prisma.DeckGetPayload<{ include: 
   await ctx.log(`${cls.size} ads beoordeeld, ${noise} als ruis verwijderd.`);
 
   // 6. Rank and select (80%)
-  const sel = selectAds(eligible.map((a) => ({ adId: a.adId, advertiser: a.advertiser, activeDays: a.activeDays, variantCount: a.variantCount, mediaHash: a.mediaHash, cls: cls.get(a.adId) ?? null })), b);
+  const sel = selectAds(eligible.map((a) => ({ adId: a.adId, advertiser: a.advertiser, activeDays: a.activeDays, variantCount: a.variantCount, mediaHash: a.mediaHash, cls: cls.get(a.adId) ?? null })), bSel, {
+    advertisers: pinned.map((p) => p.candidate.advertiser), hashes: pinned.map((p) => p.candidate.mediaHash).filter(Boolean),
+    aiCount: pinned.filter((p) => parseJson<{ cls?: { aiGenerated?: boolean } }>(p.candidate.scores, {}).cls?.aiGenerated).length,
+  });
   const decisions = new Map<string, Decision>(sel.decisions.map((d) => [d.adId, d]));
   const chosen = eligible
     .filter((a) => decisions.get(a.adId)?.selected)
@@ -252,10 +270,11 @@ async function generate(ctx: JobContext, deck: Prisma.DeckGetPayload<{ include: 
 
   // 9. Save (96-100%)
   await ctx.progress(96, "Deck opslaan…");
-  const round = deck.round + (deck.status === "draft" ? 0 : 1);
+  const round = deck.round + (prevItems.length ? 1 : 0);
   await db.$transaction(async (tx) => {
-    await tx.deckItem.deleteMany({ where: { deckId: deck.id } });
-    await tx.adCandidate.deleteMany({ where: { deckId: deck.id } });
+    await tx.deckItem.deleteMany({ where: { deckId: deck.id, pinned: false } });
+    await tx.adCandidate.deleteMany({ where: { deckId: deck.id, id: { notIn: pinned.map((p) => p.candidateId) } } });
+    for (const [pos, p] of pinned.entries()) await tx.deckItem.update({ where: { id: p.id }, data: { position: pos } });
     await tx.usedAdvertiser.deleteMany({ where: { deckId: deck.id } });
     const all = [...found.values()];
     for (const a of all) {
@@ -283,18 +302,19 @@ async function generate(ctx: JobContext, deck: Prisma.DeckGetPayload<{ include: 
       const why = [t?.whyThis ?? "", hits.length ? `⚠ Controleer: bevat mogelijk "${hits.join('", "')}".` : ""].filter(Boolean).join(" ");
       await tx.deckItem.create({
         data: {
-          deckId: deck.id, candidateId: idOf.get(a.adId)!, contentType: decisions.get(a.adId)!.contentType!, position: pos,
+          deckId: deck.id, candidateId: idOf.get(a.adId)!, contentType: decisions.get(a.adId)!.contentType!, position: pinned.length + pos,
           whatYouSee: cls.get(a.adId)?.whatYouSee ?? "", application, whyThis: why, funnelTag: cls.get(a.adId)?.funnel ?? "",
         },
       });
     }
-    for (const adv of new Set(chosen.map((a) => a.advertiser).filter(Boolean))) {
+    for (const adv of new Set([...chosen.map((a) => a.advertiser), ...pinned.map((p) => p.candidate.advertiser)].filter(Boolean))) {
       await tx.usedAdvertiser.create({ data: { clientId: client.id, deckId: deck.id, advertiser: adv } });
     }
     await tx.deck.update({ where: { id: deck.id }, data: { status: "review", round, summary: copy.data.summary.map((s) => `- ${s}`).join("\n") } });
   }, { timeout: 60_000 });
 
   const costUsd = usage.reduce((s, u) => s + u.costUsd, 0);
+  if (pinned.length) await ctx.log(`${pinned.length} vastgepinde ads zijn blijven staan.`);
   await ctx.log(`Klaar: ${chosen.length} ads in het deck. Kosten Claude ≈ $${costUsd.toFixed(2)}.`);
   return { searches: run.length, found: found.size, classified: cls.size, selected: chosen.length, shortfall: sel.shortfall, costUsd, warnings };
 }

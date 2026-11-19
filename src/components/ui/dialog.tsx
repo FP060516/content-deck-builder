@@ -10,8 +10,8 @@ export const DialogClose = D.Close;
 export function DialogContent({ className, children, title, description, ...props }: React.ComponentProps<typeof D.Content> & { title: string; description?: string }) {
   return (
     <D.Portal>
-      <D.Overlay className="fixed inset-0 z-50 bg-black/50" />
-      <D.Content className={cn("fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border bg-card p-6 shadow-xl", className)} {...props}>
+      <D.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+      <D.Content className={cn("fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 max-h-[90vh] overflow-y-auto rounded-3xl border bg-card p-6 shadow-xl", className)} {...props}>
         <div className="space-y-1">
           <D.Title className="text-lg font-semibold">{title}</D.Title>
           {description && <D.Description className="text-sm text-muted-foreground">{description}</D.Description>}

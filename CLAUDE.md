@@ -49,7 +49,11 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - `src/components/job-panel.tsx`: `useJob` (SSE) + `JobPanel`, gedeeld door scraper en profiel.
 - `src/lib/jobs/generate.ts`: taak "generate" (de Genereer-knop). Stappen: zoekplan (Claude, `prompts/search-plan.md`) → `sanitizePlan` (alleen gekozen markten, nooit de klantnaam, concurrenten exact bij breedte 0) → elke zoekterm × elk zoekvenster ophalen (max. 16 zoekopdrachten, 30 ads per stuk, cache) → voorfilter (geen media, eigen ads, uitgesloten/eerder gebruikte merken) → thumbnails downloaden → classificatie per 10 met beelden (Claude, effort low, `prompts/classify.md`) → `selectAds` → video's van gekozen ads downloaden → toepassingsteksten + samenvatting (copy-model, `prompts/application.md`) → in één transactie opslaan (AdCandidate met reden van afwijzing, DeckItem, UsedAdvertiser, deck → review). Bij fout/annuleren gaat het deck terug naar draft of review.
 - `src/lib/pipeline/`: `rank.ts` (pure logica: `winnerScore`, `scoreOf` = 0,35 relevantie + 0,25 winnaar + 0,2 gat + 0,2 kwaliteit, `aiCap`, `selectAds`, `forbiddenHits`), `describe.ts` (briefing/klant als tekst voor prompts), `schemas.ts`.
-- `src/app/decks/[id]/deck-results.tsx`: eerste resultatenweergave onder de briefing (voortgang, samenvatting, items per contenttype, "waarom niet?"). Bewerken en exports = fase 5.
+- `src/app/decks/[id]/deck-results.tsx`: voortgang van de generatie onder de briefing; gaat bij "klaar" naar het deckscherm.
+- `src/components/deck-tabs.tsx`: tabs "1 · Briefing" / "2 · Deck".
+- `src/app/decks/[id]/deck/`: deckscherm (`deck-editor.tsx`) + server actions: goed/af, vastpinnen, volgorde, tekst bewerken (verboden claims worden opnieuw gecontroleerd), tekst herschrijven met Claude (optionele instructie), vervangen door een relevant alternatief (zelfde contenttype eerst; nieuwe tekst via `src/lib/pipeline/copy.ts`), samenvatting bewerken, deck afronden.
+- `src/lib/deck/load.ts`: `loadDeckView` (gedeeld door deckscherm en exports); afgekeurde items gaan nooit mee in een export.
+- `src/lib/export/`: `formats.ts` (Markdown, CSV met BOM voor Canva Bulk Create/Excel, ZIP met deck.md + deck.csv + media/NN-adverteerder-adId.ext + lijst ontbrekende media), `pptx.ts` (16:9 in huisstijl: titel, samenvatting, één dia per ad; alleen jpg/png/gif als beeld, anders placeholder). Route: `/decks/[id]/export/{md,csv,zip,pptx}`.
 - `src/components/option-picker.tsx`: de dropdown-balk (doorzoekbaar, gegroepeerd, multi-select met chips).
 - `src/app/decks/[id]/briefing-form.tsx`: het briefingscherm.
 
@@ -85,6 +89,10 @@ Denk als een **e-commerce performance marketeer**: funnelfase, doel, periode en 
 - Opnieuw genereren vervangt de resultaten van het deck (de UI vraagt bevestiging) en verhoogt `round`.
 - Classificatiebudget: max(20, min(90, doel × 3)) ads, gekozen op winnaarssignalen.
 
+## Fase 5-notities
+- Opnieuw genereren: vastgepinde items blijven staan (en tellen mee voor max. per adverteerder, dubbele creatives en de AI-limiet over het hele deck); ads die de marketeer afkeurde of verving komen niet terug. `round` gaat pas omhoog als het deck al resultaten had.
+- PowerPoint-check lokaal: `soffice --headless --convert-to pdf deck.pptx`.
+
 ## Werkwijze
 Bouw in fases en stop na elke fase met testinstructies. Tests draai je met `npm test` (vitest).
-Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel ✅ · 4 = pipeline ✅ · 5 = deckscherm en exports · 6 = afwerking.
+Fase 1 = fundament ✅ · 2 = scraper ✅ · 3 = klantprofiel ✅ · 4 = pipeline ✅ · 5 = deckscherm en exports ✅ · 6 = afwerking.
